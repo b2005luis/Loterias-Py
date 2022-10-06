@@ -35,19 +35,11 @@ Mesmo assim houveram duas aposta com 4 acertos, dando um total de +/- R$ 1.700,0
 
 Veja algumas imagens do 1º teste:
 
-![Resultado](./track-record/2022-08-25-Na-Pratica-Resultado-001.png)
+![Resultado](/track-record/2022-08-25-Na-Pratica-Resultado-001.png)
 
-![Aposta premiada](./track-record/2022-08-25-Na-Pratica-Resultado-002.png)
+![Aposta-premiada](/track-record/2022-05-25-Na-Pratica-Resultado-002.png)
 
-![Valor do prêmio](./track-record/2022-08-25-Na-Pratica-Resultado-003.png)
-
-Veja algumas imagens do teste após várias regulagens de parâmetros:
-
-![Resultado](./track-record/2022-08-25-Na-Pratica-Resultado-001.png)
-
-![Resultado](./track-record/2022-08-25-Na-Pratica-Resultado-001.png)
-
-![Resultado](./track-record/2022-08-25-Na-Pratica-Resultado-001.png)
+![Valor-do-prêmio](/track-record/2022-05-25-Na-Pratica-Resultado-003.png)
 
 ### Dependências
 
