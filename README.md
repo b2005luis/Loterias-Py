@@ -2,11 +2,11 @@
 
 ### Intridução
 
-Nesse projeto, estamos desenvolvendo a ideia inteligente de números para jogar na loteria._
+Nesse projeto, estamos desenvolvendo a ideia de um chutador inteligente de números para jogar na loteria._
 
 A lógica de funcionamento é basicamente em uma base de dados histórica que tem os resultados da Mega Sena desde 1995.ega 
 
-Os jogos mais recentes são expurgados baseados em um parâ,etro com a quantidade, e retirado do modelo de chutes, que é a base de, no caso da Mega Sena, um conjunto de números que vai de 01 a 60.
+Os jogos mais recentes são expurgados do template de números chutáveis, baseados em um parâmetro com a quantidade, e retirado do modelo de chutes, que é a base de, no caso da Mega Sena, um conjunto de números que vai de 01 a 60.
 
 Após isso, foi usada uma rede neural Back Propagation, com 6 pontos de entrada, uma camada de neurônios que ainda está em fase de teste e uma saída com a probabilidade que sinaliza se a aposta pode ou não ser uma ganhadora.
 
@@ -29,20 +29,37 @@ Caso estas etapas sejam satisfatórias, a aposta é gravada em uma tabela de apo
 É bom deixar claro que a probabilidade de ocorrer um acerto é bem pequena, pois a estatística daria algo em torno de: 
 60 * 59 * 58 * 57 * 56 * 55 =  36.045.979.200 de combinações possíveis para uma aposta.
 
-Além disso todos os nímeros voltam para o globo para um novo sorteio.
+Além disso todos os números voltam para o globo para um novo sorteio, o que faz retornar as possibilidades ao estado inicial.
 
-Mesmo assim houveram duas aposta com 4 acertos, dando um total de +/- R$ 1.700,00
+Mesmo assim houveram duas apostas com 4 acertos, dando um total de +/- R$ 1.700,00
 
 Veja algumas imagens do 1º teste:
 
-![Resultado](/track-record/2022-08-25-Na-Pratica-Resultado-001.png)
+Nesse primeiro caso, onde foi feita uma aposta na teimosinha com 8 recorrências, houve uma acertividade em torno de 8 para 1, totalizando as chances de 12,5% de ganhar algum prêmio.
 
-![Aposta-premiada](/track-record/2022-05-25-Na-Pratica-Resultado-002.png)
+<br>
+![Resultado](/track-record/2022-06-25-1-Resultado.png)
 
-![Valor-do-prêmio](/track-record/2022-05-25-Na-Pratica-Resultado-003.png)
+![Aposta-premiada](/track-record/2022-06-25-2-Aposta-Premiada.png)
+
+<br>
+No segundo caso, onde foram feitas 5 apostas,  houve uma acertividade em torno de 5 para 1, totalizando as chances de 20,0% de ganhar algum prêmio.
+
+![resuktadi-2](/track-record/2022-10-01-1-Resultado.png)
+
+![aposta-premiada-2](/track-record/2022-10-01-2-Aposta-Premiada.png)
+
+> Mais uma vez, é bom deixar claro que são 60 bolas, de mesmo tamanho, peso, e que retornam para o globo após cada sorteio, o que acaba não dando nenhuma garantia de que este método tenha êxito, pois a estatística prevalece.
 
 ### Dependências
 
 * Pythom >= 3
+  > [Instalar o Python 3](https://www.python.org/downloads)
 * PyBrain3 >= 3.0.4
+  > `python -m pip install pybrain3`
 * Pamdas >= 1.4.1
+  > `python -m pip install pandas`
+* Requests >= 2.27.1
+  > `python -m pip install requests`
+* MySQL Connector Python 8.0.30
+  > `python -m pip install mysql-connector-python`
