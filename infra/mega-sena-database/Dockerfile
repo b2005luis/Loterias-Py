@@ -1,0 +1,8 @@
+FROM mysql:5.7
+
+ENV MYSQL_ROOT_PASSWORD=megasena
+ENV MYSQL_USER=megasena_rw
+ENV MYSQL_PASSWORD=megasena
+ENV MYSQL_DATABASE=megasena
+
+EXPOSE 3306

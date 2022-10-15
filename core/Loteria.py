@@ -20,6 +20,7 @@ class Loteria:
                 if self.template_aposta.__contains__(z):
                     self.template_aposta.remove(z)
                     print(f"REMOVER {z}")
+        print("\n")
 
     def gerar_aposta(self):
         aposta = sample(self.template_aposta, self.quantidade_numeros)

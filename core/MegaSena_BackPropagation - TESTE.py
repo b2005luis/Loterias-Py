@@ -3,7 +3,6 @@ from pybrain3.supervised import BackpropTrainer
 from pybrain3.tools.shortcuts import buildNetwork
 
 from core.Loteria import Loteria
-from core.MegaSena_Updates import atualizar_base_historic
 from repository.ApostaCandidataRepository import ApostaCandidataRepository
 from repository.MySQLDatabase import MySQLDatabase
 from repository.ResultadoRepository import MegaSenaResultadoRepository
@@ -20,8 +19,7 @@ def treinar_rede():
     # Treinar rede com dataset carregado
     trainer = BackpropTrainer(network, dataset)
     TTR = float(trainer.train())
-    print(f"Fase do Treinamento | Margem de Erro :: {TTR}%")
-    print("\n")
+    print(f"Fase do Treinamento | Margem de Erro :: {TTR}% \n")
 
 
 def montar_intervalo_exclusivo():
@@ -42,11 +40,10 @@ def comparar_numeros_repetidos(aposta: list, limite_duplicados: int = 1):
 # todo Regulagem de parâmetros
 # Intervalo para exprgar / ultimos jogos + Criterio de aceite de previsão
 quantidade_jogos = 10
-expurgo_apostas_recentes = 2
+expurgo_apostas_recentes = 1
 expurgo = 10
-probabilidade_minima = 0.0
-limite_duplicados = 1
-atualizar_base_resultados = True
+probabilidade_minima = 0.066666667
+limite_duplicados = 0
 
 # Inicializar bases de dados
 database = MySQLDatabase()
@@ -62,10 +59,6 @@ loteria.set_template_aposta(primeiro_numero=1, ultimo_numero=60)
 # Listas de apoio
 esperados = list()
 acertos = list()
-
-# Atualizar base de dados historica
-if atualizar_base_resultados:
-    atualizar_base_historic(database=database)
 
 # Carregar dados
 download = resultadoRepository.listar_resultados("Coluna1, Coluna2, Coluna3, Coluna4, Coluna5, Coluna6, Ganhadores")
@@ -92,11 +85,10 @@ while i <= loteria.quantidade_apostas:
 
     previsao = float(network.activate(loteria.aposta_candidata))
 
-    if previsao >= probabilidade_minima:
+    if previsao > probabilidade_minima:
         comparar_numeros_repetidos(aposta=loteria.aposta_candidata)
 
         if acertos.__len__() <= limite_duplicados:
-            apostaCandidataRepository.cadastrar_aposta_candidata(loteria.aposta_candidata, previsao)
             loteria.apostas.append(loteria.aposta_candidata)
             esperados.append(loteria.aposta_candidata)
             print(f"{loteria.aposta_candidata} :: {previsao}")
@@ -113,3 +105,11 @@ database.close_connection()
 
 # Mostrar conjunto de dados
 loteria.mostrar_apostas_selecionadas()
+
+print('\n')
+ultimo_resultado = set([4, 15, 22, 53, 56, 60])
+for a in loteria.apostas:
+    acuidade = list(set(a).intersection(ultimo_resultado))
+    acuidade = sorted(acuidade, reverse=False)
+    print(f"Aposta {a} | Com {len(acuidade)} acertos {acuidade}")
+    acuidade = list()
