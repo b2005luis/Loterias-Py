@@ -36,16 +36,17 @@ def comparar_numeros_repetidos(aposta: list, limite_duplicados: int = 1):
     for row in esperados.__iter__():
         acertos = list(set(row).intersection(aposta))
         if acertos.__len__() > limite_duplicados:
+            print(f"{loteria.aposta_candidata} foi descartada por EXCESSO DE OCORRÊNCIAS com {acertos}")
             break
 
 
 # todo Regulagem de parâmetros
 # Intervalo para exprgar / ultimos jogos + Criterio de aceite de previsão
-quantidade_jogos = 10
-expurgo_apostas_recentes = 2
-expurgo = 10
-probabilidade_minima = 0.0
-limite_duplicados = 1
+quantidade_jogos = 100
+expurgo_apostas_recentes = 1
+expurgo = 8
+probabilidade_minima = 0.1
+limite_duplicados = 0
 atualizar_base_resultados = True
 
 # Inicializar bases de dados

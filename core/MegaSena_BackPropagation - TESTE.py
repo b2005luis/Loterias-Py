@@ -30,19 +30,20 @@ def montar_intervalo_exclusivo():
     print("\n")
 
 
-def comparar_numeros_repetidos(aposta: list, limite_duplicados: int = 1):
+def comparar_numeros_repetidos():
     for row in esperados.__iter__():
-        acertos = list(set(row).intersection(aposta))
+        acertos = list(set(row).intersection(loteria.aposta_candidata))
         if acertos.__len__() > limite_duplicados:
+            print(f"{loteria.aposta_candidata} foi descartada por EXCESSO DE OCORRÊNCIAS com {acertos}")
             break
 
 
 # todo Regulagem de parâmetros
 # Intervalo para exprgar / ultimos jogos + Criterio de aceite de previsão
-quantidade_jogos = 10
+quantidade_jogos = 100
 expurgo_apostas_recentes = 1
-expurgo = 10
-probabilidade_minima = 0.066666667
+expurgo = 8
+probabilidade_minima = 0.1
 limite_duplicados = 0
 
 # Inicializar bases de dados
@@ -65,10 +66,12 @@ download = resultadoRepository.listar_resultados("Coluna1, Coluna2, Coluna3, Col
 
 # Tamanho do dataset
 k = download.__len__()
+download = download[:(k - 1)]
 
 # Expurgar jogos recentes
 loteria.expurgar_template_chute(dataset=download, expurga_ultimos_jogos=expurgo_apostas_recentes)
 
+# todo Regulagem de camadas de neurônios
 # Gerar rede neural
 network = buildNetwork(6, 30, 1, bias=True)
 
@@ -85,9 +88,8 @@ while i <= loteria.quantidade_apostas:
 
     previsao = float(network.activate(loteria.aposta_candidata))
 
-    if previsao > probabilidade_minima:
-        comparar_numeros_repetidos(aposta=loteria.aposta_candidata)
-
+    if previsao >= probabilidade_minima:
+        comparar_numeros_repetidos()
         if acertos.__len__() <= limite_duplicados:
             loteria.apostas.append(loteria.aposta_candidata)
             esperados.append(loteria.aposta_candidata)
@@ -106,8 +108,8 @@ database.close_connection()
 # Mostrar conjunto de dados
 loteria.mostrar_apostas_selecionadas()
 
-print('\n')
-ultimo_resultado = set([4, 15, 22, 53, 56, 60])
+ultimo_resultado = set([1, 23, 32, 33, 36, 59])
+print(f'A sequência esperada era: {sorted(ultimo_resultado, reverse=False)}\n')
 for a in loteria.apostas:
     acuidade = list(set(a).intersection(ultimo_resultado))
     acuidade = sorted(acuidade, reverse=False)
