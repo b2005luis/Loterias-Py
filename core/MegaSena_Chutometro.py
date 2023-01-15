@@ -1,27 +1,8 @@
-from pybrain3.datasets import SupervisedDataSet
-from pybrain3.supervised import BackpropTrainer
-from pybrain3.tools.shortcuts import buildNetwork
-
 from core.Loteria import Loteria
 from core.MegaSena_Updates import atualizar_base_historic
 from repository.ApostaCandidataRepository import ApostaCandidataRepository
 from repository.MySQLDatabase import MySQLDatabase
 from repository.ResultadoRepository import MegaSenaResultadoRepository
-
-
-def treinar_rede():
-    # DataSet model.
-    dataset = SupervisedDataSet(6, 1)
-    for row in download.__iter__():
-        in_value = row[:6]
-        out_value = row[6:][0]
-        dataset.addSample(in_value, out_value)
-
-    # Treinar rede com dataset carregado
-    trainer = BackpropTrainer(network, dataset)
-    TTR = float(trainer.train())
-    print(f"Fase do Treinamento | Margem de Erro :: {TTR}%")
-    print("\n")
 
 
 def montar_intervalo_exclusivo():
@@ -47,28 +28,27 @@ def gerar_aposra():
         loteria.aposta_candidata = loteria.gerar_aposta()
         for row in esperados.__iter__():
             acertos = list(set(row).intersection(loteria.aposta_candidata))
-            if acertos.__len__() > limite_duplicados:
-                print(f"{loteria.aposta_candidata} foi descartada por EXCESSO DE OCORRÊNCIAS com {acertos}")
-                continuar = True
-                break
-            else:
+            if acertos.__len__() <= limite_duplicados:
                 ativado += 1
+            else:
+                print(f"{loteria.aposta_candidata} :: {acertos} acertos descartado por OCORRÊNCIAS")
 
         ratio = (ativado / expurgo) * 100
 
         if ratio >= ratio_minimo:
+            print(f"Finalizado com ativação de {ratio}%")
             continuar = False
 
 
 # todo Regulagem de parâmetros
 # Intervalo para exprgar / ultimos jogos + Criterio de aceite de previsão
-quantidade_jogos = 100
+quantidade_jogos = 7
 expurgo_apostas_recentes = 1
-expurgo = 3000
-probabilidade_minima = -9999
-limite_duplicados = 1
+expurgo = 100
+limite_duplicados = 2
 ratio_minimo = 100.0
 atualizar_base_resultados = False
+modo_treino = True
 
 # Inicializar bases de dados
 database = MySQLDatabase()
@@ -94,38 +74,29 @@ download = resultadoRepository.listar_resultados("Coluna1, Coluna2, Coluna3, Col
 
 # Tamanho do dataset
 k = download.__len__()
+if modo_treino:
+    download = download[:(k - 1)]
+    k = download.__len__()
 
 # Expurgar jogos recentes
 loteria.expurgar_template_chute(dataset=download, expurga_ultimos_jogos=expurgo_apostas_recentes)
 
-# TODO Inicializar camadas da rede
-# Gerar rede neural
-network = buildNetwork(6, 30, 1, bias=True)
-
 # Montar intervalo de numeros que não devem repetir nos chutes
 montar_intervalo_exclusivo()
-
-# Treinar rede
-treinar_rede()
 
 # Inicializar as análises de cjutes
 i = 1
 while i <= loteria.quantidade_apostas:
     gerar_aposra()
 
-    previsao = float(network.activate(loteria.aposta_candidata))
-
-    if previsao >= probabilidade_minima:
-        if acertos.__len__() <= limite_duplicados:
-            apostaCandidataRepository.cadastrar_aposta_candidata(loteria.aposta_candidata, previsao)
-            loteria.apostas.append(loteria.aposta_candidata)
-            esperados.append(loteria.aposta_candidata)
-            print(f"{loteria.aposta_candidata} :: {previsao}")
-            i = i + 1
-        else:
-            print(f"{loteria.aposta_candidata} :: {previsao} foi descartado por EXCESSO DE OCORRÊNCIAS")
+    if acertos.__len__() <= limite_duplicados:
+        apostaCandidataRepository.cadastrar_aposta_candidata(loteria.aposta_candidata, 0.00)
+        loteria.apostas.append(loteria.aposta_candidata)
+        esperados.append(loteria.aposta_candidata)
+        print(f"{loteria.aposta_candidata} :: {0.00}")
+        i = i + 1
     else:
-        print(f"{loteria.aposta_candidata} :: {previsao} foi descartado por BAIXA PROBABILIDADE")
+        print(f"{loteria.aposta_candidata} :: foi descartado por EXCESSO DE OCORRÊNCIAS")
 
     acertos.clear()
 
@@ -134,3 +105,13 @@ database.close_connection()
 
 # Mostrar conjunto de dados
 loteria.mostrar_apostas_selecionadas()
+
+if modo_treino:
+    spect = [3, 20, 45, 52, 53, 58]
+    ultimo_resultado = set(spect)
+    print(f'A sequência esperada era: {sorted(ultimo_resultado, reverse=False)}\n')
+    for a in loteria.apostas:
+        acuidade = list(set(a).intersection(ultimo_resultado))
+        acuidade = sorted(acuidade, reverse=False)
+        print(f"Aposta {a} | Com {len(acuidade)} acertos {acuidade}")
+        acuidade = list()

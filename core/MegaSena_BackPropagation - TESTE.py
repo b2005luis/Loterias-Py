@@ -3,6 +3,7 @@ from pybrain3.supervised import BackpropTrainer
 from pybrain3.tools.shortcuts import buildNetwork
 
 from core.Loteria import Loteria
+from core.MegaSena_Updates import atualizar_base_historic
 from repository.ApostaCandidataRepository import ApostaCandidataRepository
 from repository.MySQLDatabase import MySQLDatabase
 from repository.ResultadoRepository import MegaSenaResultadoRepository
@@ -38,13 +39,35 @@ def comparar_numeros_repetidos():
             break
 
 
+def gerar_aposra():
+    continuar = True
+    while continuar:
+        ativado = 0
+        loteria.aposta_candidata = loteria.gerar_aposta()
+        for row in esperados.__iter__():
+            acertos = list(set(row).intersection(loteria.aposta_candidata))
+            if acertos.__len__() <= limite_duplicados:
+                ativado += 1
+            else:
+                print(f"{loteria.aposta_candidata} :: {acertos} acertos descartado por OCORRÊNCIAS")
+
+        ratio = (ativado / expurgo) * 100
+
+        if ratio >= ratio_minimo:
+            print(f"Finalizado com ativação de {ratio}%")
+            continuar = False
+
+
 # todo Regulagem de parâmetros
 # Intervalo para exprgar / ultimos jogos + Criterio de aceite de previsão
-quantidade_jogos = 100
+quantidade_jogos = 7
 expurgo_apostas_recentes = 1
-expurgo = 8
+expurgo = 30
+limite_duplicados = 2
 probabilidade_minima = 0.1
-limite_duplicados = 0
+ratio_minimo = 100.0
+atualizar_base_resultados = False
+modo_treino = True
 
 # Inicializar bases de dados
 database = MySQLDatabase()
@@ -61,12 +84,18 @@ loteria.set_template_aposta(primeiro_numero=1, ultimo_numero=60)
 esperados = list()
 acertos = list()
 
+# Atualizar base de dados historica
+if atualizar_base_resultados:
+    atualizar_base_historic(database=database)
+
 # Carregar dados
 download = resultadoRepository.listar_resultados("Coluna1, Coluna2, Coluna3, Coluna4, Coluna5, Coluna6, Ganhadores")
 
 # Tamanho do dataset
 k = download.__len__()
-download = download[:(k - 1)]
+if modo_treino:
+    download = download[:(k - 1)]
+    k = download.__len__()
 
 # Expurgar jogos recentes
 loteria.expurgar_template_chute(dataset=download, expurga_ultimos_jogos=expurgo_apostas_recentes)
@@ -84,13 +113,13 @@ treinar_rede()
 # Inicializar as análises de cjutes
 i = 1
 while i <= loteria.quantidade_apostas:
-    loteria.aposta_candidata = loteria.gerar_aposta()
+    gerar_aposra()
 
     previsao = float(network.activate(loteria.aposta_candidata))
 
     if previsao >= probabilidade_minima:
-        comparar_numeros_repetidos()
         if acertos.__len__() <= limite_duplicados:
+            apostaCandidataRepository.cadastrar_aposta_candidata(loteria.aposta_candidata, previsao)
             loteria.apostas.append(loteria.aposta_candidata)
             esperados.append(loteria.aposta_candidata)
             print(f"{loteria.aposta_candidata} :: {previsao}")
@@ -108,10 +137,12 @@ database.close_connection()
 # Mostrar conjunto de dados
 loteria.mostrar_apostas_selecionadas()
 
-ultimo_resultado = set([1, 23, 32, 33, 36, 59])
-print(f'A sequência esperada era: {sorted(ultimo_resultado, reverse=False)}\n')
-for a in loteria.apostas:
-    acuidade = list(set(a).intersection(ultimo_resultado))
-    acuidade = sorted(acuidade, reverse=False)
-    print(f"Aposta {a} | Com {len(acuidade)} acertos {acuidade}")
-    acuidade = list()
+if modo_treino:
+    spect = [3, 20, 45, 52, 53, 58]
+    ultimo_resultado = set(spect)
+    print(f'A sequência esperada era: {sorted(ultimo_resultado, reverse=False)}\n')
+    for a in loteria.apostas:
+        acuidade = list(set(a).intersection(ultimo_resultado))
+        acuidade = sorted(acuidade, reverse=False)
+        print(f"Aposta {a} | Com {len(acuidade)} acertos {acuidade}")
+        acuidade = list()
