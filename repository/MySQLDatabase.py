@@ -3,7 +3,7 @@ from mysql.connector import connect, MySQLConnection
 
 class MySQLDatabase():
     def __init__(self):
-        self.host: str = "D342114R"
+        self.host: str = "GZ690UD"
         self.username: str = "megasena_rw"
         self.password: str = "megasena"
         self.database: str = "megasena"

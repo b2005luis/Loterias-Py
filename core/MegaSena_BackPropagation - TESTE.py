@@ -31,14 +31,6 @@ def montar_intervalo_exclusivo():
     print("\n")
 
 
-def comparar_numeros_repetidos():
-    for row in esperados.__iter__():
-        acertos = list(set(row).intersection(loteria.aposta_candidata))
-        if acertos.__len__() > limite_duplicados:
-            print(f"{loteria.aposta_candidata} foi descartada por EXCESSO DE OCORRÊNCIAS com {acertos}")
-            break
-
-
 def gerar_aposra():
     continuar = True
     while continuar:
@@ -49,12 +41,12 @@ def gerar_aposra():
             if acertos.__len__() <= limite_duplicados:
                 ativado += 1
             else:
-                print(f"{loteria.aposta_candidata} :: {acertos} acertos descartado por OCORRÊNCIAS")
+                pass # print(f"{loteria.aposta_candidata} :: {acertos} acertos descartado por OCORRÊNCIAS")
 
         ratio = (ativado / expurgo) * 100
 
         if ratio >= ratio_minimo:
-            print(f"Finalizado com ativação de {ratio}%")
+            print(f"{loteria.aposta_candidata} com ativação de {ratio}%")
             continuar = False
 
 
@@ -62,12 +54,12 @@ def gerar_aposra():
 # Intervalo para exprgar / ultimos jogos + Criterio de aceite de previsão
 quantidade_jogos = 7
 expurgo_apostas_recentes = 1
-expurgo = 30
-limite_duplicados = 2
+expurgo = 8
+limite_duplicados = 0
 probabilidade_minima = 0.1
 ratio_minimo = 100.0
 atualizar_base_resultados = False
-modo_treino = True
+modo_treino = False
 
 # Inicializar bases de dados
 database = MySQLDatabase()
@@ -122,12 +114,12 @@ while i <= loteria.quantidade_apostas:
             apostaCandidataRepository.cadastrar_aposta_candidata(loteria.aposta_candidata, previsao)
             loteria.apostas.append(loteria.aposta_candidata)
             esperados.append(loteria.aposta_candidata)
-            print(f"{loteria.aposta_candidata} :: {previsao}")
+            # print(f"{loteria.aposta_candidata} :: {previsao}")
             i = i + 1
         else:
-            print(f"{loteria.aposta_candidata} :: {previsao} foi descartado por EXCESSO DE OCORRÊNCIAS")
+            pass # print(f"{loteria.aposta_candidata} :: {previsao} foi descartado por EXCESSO DE OCORRÊNCIAS")
     else:
-        print(f"{loteria.aposta_candidata} :: {previsao} foi descartado por BAIXA PROBABILIDADE")
+        pass # print(f"{loteria.aposta_candidata} :: {previsao} foi descartado por BAIXA PROBABILIDADE")
 
     acertos.clear()
 
@@ -138,7 +130,7 @@ database.close_connection()
 loteria.mostrar_apostas_selecionadas()
 
 if modo_treino:
-    spect = [3, 20, 45, 52, 53, 58]
+    spect = [4, 5, 17, 20, 48, 52]
     ultimo_resultado = set(spect)
     print(f'A sequência esperada era: {sorted(ultimo_resultado, reverse=False)}\n')
     for a in loteria.apostas:

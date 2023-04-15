@@ -1,5 +1,3 @@
-from pandas._libs.writers import string_array_replace_from_nan_rep
-
 from dataprovider.MegaSenaDownload import MegaSenaDownload
 from mapper import ApostaMapper
 from mapper.ApostaMapper import ApostaMapper
@@ -25,3 +23,6 @@ def atualizar_base_historic(database: MySQLDatabase = None):
             print(item)
 
     database.connection.commit()
+
+
+atualizar_base_historic()

@@ -5,7 +5,8 @@ services:
     container_name: mega-sena-database
     image: mysql:5.7
     volumes:
-      - mega_sena_database
+      - ./Init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./data:/var/lib/mysql
     networks:
       - mega_sena_database_net
     environment:
@@ -15,10 +16,8 @@ services:
       - MYSQL_DATABASE=megasena
     ports:
       - 3306:3306
+    restart: always
 
 networks:
   mega_sena_database_net:
     external: true
-
-volumes:
-  mega_sena_database: { }

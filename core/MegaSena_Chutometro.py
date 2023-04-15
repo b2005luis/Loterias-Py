@@ -22,6 +22,7 @@ def comparar_numeros_repetidos(aposta: list, limite_duplicados: int = 1):
 
 
 def gerar_aposra():
+    global ratio_minimo
     continuar = True
     while continuar:
         ativado = 0
@@ -38,16 +39,18 @@ def gerar_aposra():
         if ratio >= ratio_minimo:
             print(f"Finalizado com ativação de {ratio}%")
             continuar = False
+        else:
+            ratio_minimo = ratio_minimo.__sub__(0.5)
 
 
 # todo Regulagem de parâmetros
 # Intervalo para exprgar / ultimos jogos + Criterio de aceite de previsão
 quantidade_jogos = 7
 expurgo_apostas_recentes = 1
-expurgo = 100
+expurgo = 3000
 limite_duplicados = 2
 ratio_minimo = 100.0
-atualizar_base_resultados = False
+atualizar_base_resultados = True
 modo_treino = True
 
 # Inicializar bases de dados
@@ -107,7 +110,7 @@ database.close_connection()
 loteria.mostrar_apostas_selecionadas()
 
 if modo_treino:
-    spect = [3, 20, 45, 52, 53, 58]
+    spect = [9, 12, 20, 30, 32, 35]
     ultimo_resultado = set(spect)
     print(f'A sequência esperada era: {sorted(ultimo_resultado, reverse=False)}\n')
     for a in loteria.apostas:
