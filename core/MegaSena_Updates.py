@@ -5,7 +5,7 @@ from repository.MySQLDatabase import MySQLDatabase
 from repository.ResultadoRepository import MegaSenaResultadoRepository
 
 
-def atualizar_base_historic(database: MySQLDatabase = None):
+def atualizar_base_historica(database: MySQLDatabase = None):
     download = MegaSenaDownload()
     download.buscar_resultados()
 
@@ -23,6 +23,3 @@ def atualizar_base_historic(database: MySQLDatabase = None):
             print(item)
 
     database.connection.commit()
-
-
-atualizar_base_historic()

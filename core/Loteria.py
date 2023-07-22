@@ -24,7 +24,8 @@ class Loteria:
 
     def gerar_aposta(self):
         aposta = sample(self.template_aposta, self.quantidade_numeros)
-        return sorted(aposta, reverse=False)
+        self.aposta_candidata = sorted(aposta, reverse=False)
+        return self.aposta_candidata
 
     def mostrar_apostas_selecionadas(self):
         print("\n[")

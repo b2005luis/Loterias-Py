@@ -1,5 +1,5 @@
 from core.Loteria import Loteria
-from core.MegaSena_Updates import atualizar_base_historic
+from core.MegaSena_Updates import atualizar_base_historica
 from repository.ApostaCandidataRepository import ApostaCandidataRepository
 from repository.MySQLDatabase import MySQLDatabase
 from repository.ResultadoRepository import MegaSenaResultadoRepository
@@ -48,9 +48,9 @@ def gerar_aposra():
 quantidade_jogos = 7
 expurgo_apostas_recentes = 1
 expurgo = 3000
-limite_duplicados = 2
+limite_duplicados = 1
 ratio_minimo = 100.0
-atualizar_base_resultados = True
+atualizar_base_resultados = False
 modo_treino = True
 
 # Inicializar bases de dados
@@ -70,7 +70,7 @@ acertos = list()
 
 # Atualizar base de dados historica
 if atualizar_base_resultados:
-    atualizar_base_historic(database=database)
+    atualizar_base_historica(database=database)
 
 # Carregar dados
 download = resultadoRepository.listar_resultados("Coluna1, Coluna2, Coluna3, Coluna4, Coluna5, Coluna6, Ganhadores")
@@ -110,7 +110,7 @@ database.close_connection()
 loteria.mostrar_apostas_selecionadas()
 
 if modo_treino:
-    spect = [9, 12, 20, 30, 32, 35]
+    spect = download[k-1:][:6]
     ultimo_resultado = set(spect)
     print(f'A sequência esperada era: {sorted(ultimo_resultado, reverse=False)}\n')
     for a in loteria.apostas:

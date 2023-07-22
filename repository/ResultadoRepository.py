@@ -40,6 +40,22 @@ class MegaSenaResultadoRepository:
         else:
             print("A base de dados não está conectada")
 
+    def listar_ultimo(self, colunas: str):
+        if self.database.is_connected():
+            try:
+                cursor = self.database.connection.cursor()
+                cursor.execute(
+                    operation=f"SELECT TOP 1 {colunas} FROM Resultados ORDER BY Concurso DESC"
+                )
+                result_set = cursor.fetchone()
+                return result_set
+            except Exception as erro:
+                print(erro.__str__())
+            finally:
+                cursor.close()
+        else:
+            print("A base de dados não está conectada")
+
     def cadastrar(self, parametros: list):
         if self.database.is_connected():
             try:
