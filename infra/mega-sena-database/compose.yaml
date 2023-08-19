@@ -1,5 +1,8 @@
 version: "3.8"
 
+networks:
+  mega_sena_database_net:
+
 services:
   mega-sena-database:
     container_name: mega-sena-database
@@ -17,7 +20,3 @@ services:
     ports:
       - 3306:3306
     restart: always
-
-networks:
-  mega_sena_database_net:
-    external: true

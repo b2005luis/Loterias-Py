@@ -16,18 +16,20 @@ from repository.ResultadoRepository import MegaSenaResultadoRepository
 parameters = {
     "network": {
         "input_size": 6,
-        "hidden_size": 30,
+        "hidden_size": 64,
         "output_size": 1,
-        "learning_rate": 0.001,
-        "train_epochs": 300,
+        "learning_rate": 0.0001,
+        "weight_decay": 0.0009,
+        "train_epochs": 1000,
         "state_path": "./networks/state"
     },
-    "quantidade_jogos": 7,
+    "quantidade_jogos": 6,
     "expurgo_apostas_recentes": 0,
-    "expurgo": 100,
-    "limite_duplicados": 1,
+    "expurgo": 3000,
+    "limite_duplicados": 2,
     "ratio_minimo": 100.0,
-    "taxa_classificacao": 0.25,
+    "taxa_classificacao": 0.85,
+    "inferir_chutes": True,
     "atualizar_base_resultados": False,
     "modo_treino": False
 }
@@ -65,7 +67,10 @@ dataset = TensorDataset(Tensor(x_data), Tensor(y_data))
 train_set, test_set = random_split(dataset, [kt, k - kt])
 
 if parameters["modo_treino"]:
-    network.calibrate_loss(train_set, parameters["network"]["train_epochs"], parameters["network"]["learning_rate"])
+    network.calibrate_loss(train_set, parameters["network"]["train_epochs"],
+                           parameters["network"]["learning_rate"],
+                           parameters["network"]["weight_decay"])
+
     network.export_network(parameters["network"]["state_path"])
 
     print("\n")
@@ -74,24 +79,31 @@ if parameters["modo_treino"]:
         predict = network(data_test)
         print(f"{data_test} com Previsão de {float(predict) :.4} e era {int(result_test)}")
 else:
-    network.load_state_dict(torch.load(f"{parameters['network']['state_path']}/state_netwirk"))
+    network.load_state_dict(torch.load(f"{parameters['network']['state_path']}/state_network"))
+
+    expectativa = [6, 9, 14, 16, 42, 47]
 
     while len(loteria.apostas) < parameters["quantidade_jogos"]:
-        gerar_aposra(loteria=loteria,
-                     esperados=x_data,
-                     expurgo=parameters["expurgo"],
-                     ratio_minimo=parameters["ratio_minimo"],
-                     limite_duplicados=parameters["limite_duplicados"])
+        if parameters["inferir_chutes"]:
+            gerar_aposra(loteria=loteria,
+                         esperados=x_data,
+                         expurgo=parameters["expurgo"],
+                         ratio_minimo=parameters["ratio_minimo"],
+                         limite_duplicados=parameters["limite_duplicados"])
+        else:
+            loteria.gerar_aposta()
 
         predict = network(Tensor(loteria.aposta_candidata))
 
-        if float(predict) <= parameters["taxa_classificacao"]:
-            print(f"Previsão33333333: {float(predict) :.4}")
-
-            expectativa = set([2, 10, 16, 32, 45, 49])
-            expectativa_realizada = list(set(loteria.aposta_candidata).intersection(expectativa))
-            print(f"Teria exito de: {expectativa_realizada}")
-
+        if float(predict) >= parameters["taxa_classificacao"]:
+            print(f"Previsão: {float(predict) :.4}")
             loteria.apostas.append(loteria.aposta_candidata)
+            esperados.append(loteria.aposta_candidata)
+
+    if not parameters["modo_treino"]:
+        print("\n")
+        for aposta in loteria.apostas.__iter__():
+            expectativa_realizada = list(set(aposta).intersection(expectativa))
+            print(f"{aposta} Teria exito de: {expectativa_realizada}")
 
     loteria.mostrar_apostas_selecionadas()
