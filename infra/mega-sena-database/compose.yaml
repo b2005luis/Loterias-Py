@@ -1,0 +1,22 @@
+version: "3.8"
+
+networks:
+  mega_sena_database_net:
+
+services:
+  mega-sena-database:
+    container_name: mega-sena-database
+    image: mysql:5.7
+    volumes:
+      - ./Init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./data:/var/lib/mysql
+    networks:
+      - mega_sena_database_net
+    environment:
+      - MYSQL_ROOT_PASSWORD=megasena
+      - MYSQL_USER=megasena_rw
+      - MYSQL_PASSWORD=megasena
+      - MYSQL_DATABASE=megasena
+    ports:
+      - 3306:3306
+    restart: always

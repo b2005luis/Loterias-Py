@@ -1,66 +1,87 @@
-from sqlite3 import Connection
-
-from repository.SQLiteDatabase import SQLiteDatabase
+from repository.MySQLDatabase import MySQLDatabase
 
 
 class MegaSenaResultadoRepository:
 
-    def __init__(self):
-        self.database: SQLiteDatabase = SQLiteDatabase(pathname="./../database/Mega-Sena.db")
+    def __init__(self, database: MySQLDatabase = None):
+        self.database: MySQLDatabase = database
 
     def buscar_concurso(self, parametro: int):
-        self.database.inicializar_recursos()
-
-        if type(self.database.connection) == Connection:
+        if self.database.is_connected():
             try:
-                self.database.cursor.execute(
-                    "SELECT * FROM Resultados "
-                    "WHERE Concurso = ?",
-                    [parametro]
+                cursor = self.database.connection.cursor()
+                cursor.execute(
+                    operation="SELECT * FROM Resultados "
+                              "WHERE Concurso = %s",
+                    params=tuple([parametro])
                 )
-                result_set = self.database.cursor.fetchone()
+                result_set = cursor.fetchone()
                 return result_set
             except Exception as erro:
                 print(erro.__str__())
             finally:
-                self.database.finalizar_recursos()
+                cursor.close()
+        else:
+            print("A base de dados não está conectada")
 
     def listar_resultados(self, colunas: str):
-        self.database.inicializar_recursos()
+        if self.database.is_connected():
+            try:
+                cursor = self.database.connection.cursor()
+                cursor.execute(
+                    operation=f"SELECT {colunas} FROM Resultados ORDER BY Concurso ASC"
+                )
+                result_set = cursor.fetchall()
+                return result_set
+            except Exception as erro:
+                print(erro.__str__())
+            finally:
+                cursor.close()
+        else:
+            print("A base de dados não está conectada")
 
-        try:
-            self.database.cursor.execute(f"SELECT {colunas} FROM Resultados ORDER BY Concurso ASC")
-            result_set = self.database.cursor.fetchall()
-            return result_set
-        except Exception as erro:
-            print(erro.__str__())
-        finally:
-            self.database.finalizar_recursos()
+    def listar_ultimo(self, colunas: str):
+        if self.database.is_connected():
+            try:
+                cursor = self.database.connection.cursor()
+                cursor.execute(
+                    operation=f"SELECT TOP 1 {colunas} FROM Resultados ORDER BY Concurso DESC"
+                )
+                result_set = cursor.fetchone()
+                return result_set
+            except Exception as erro:
+                print(erro.__str__())
+            finally:
+                cursor.close()
+        else:
+            print("A base de dados não está conectada")
 
     def cadastrar(self, parametros: list):
-        self.database.inicializar_recursos()
+        if self.database.is_connected():
+            try:
+                cursor = self.database.connection.cursor()
+                cursor.execute(
+                    operation="INSERT INTO Resultados VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                    params=parametros
+                )
+            except Exception as erro:
+                print(erro.__str__())
+            finally:
+                cursor.close()
+        else:
+            print("A base de dados não está conectada")
 
-        try:
-            self.database.cursor.execute(
-                "INSERT INTO Resultados VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                parametros
-            )
-        except Exception as erro:
-            print(erro.__str__())
-        finally:
-            self.database.connection.commit()
-            self.database.finalizar_recursos()
-
-    def deletar(self, concurso: any):
-        self.database.inicializar_recursos()
-
-        try:
-            self.database.cursor.execute(
-                "DELETE FROM Resultados WHERE Concurso = ?",
-                [concurso]
-            )
-        except Exception as error:
-            print(error.__str__())
-        finally:
-            self.database.connection.commit()
-            self.database.finalizar_recursos()
+    def deletar(self, concurso: int):
+        if self.database.is_connected():
+            try:
+                cursor = self.database.connection.cursor()
+                cursor.execute(
+                    operation="DELETE FROM Resultados WHERE Concurso = %s",
+                    params=tuple([concurso])
+                )
+            except Exception as error:
+                print(error.__str__())
+            finally:
+                cursor.close()
+        else:
+            print("A base de dados não está conectada")
