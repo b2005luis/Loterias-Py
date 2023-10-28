@@ -1,14 +1,16 @@
 
 var jogos = [
-    [5, 8, 16, 23, 30, 42],
-    [6, 9, 20, 24, 30, 43],
-    [3, 15, 19, 24, 47, 55],
-    [2, 5, 9, 18, 20, 48],
-    [1, 7, 16, 19, 25, 60],
-    [4, 9, 12, 22, 30, 39]
+    [5, 7, 10, 16, 18, 27],
+    [3, 24, 36, 48, 54, 57],
+    [3, 14, 16, 24, 49, 58],
+    [6, 10, 17, 18, 22, 46],
+    [3, 6, 31, 36, 38, 59],
+    [3, 11, 12, 19, 36, 54],
+    [36, 41, 45, 52, 53, 60],
+    [4, 5, 12, 23, 32, 44]
 ];
 
-function marcarJogo(jogo) {
+async function marcarJogo(jogo) {
 
     jogo.map(function (n) {
         n = (n < 10) ? ("#n0" + n) : ("#n" + n);
@@ -19,7 +21,6 @@ function marcarJogo(jogo) {
 
 }
 
-
-jogos.map(function (jogo) {
+jogos.map(await function (jogo) {
     marcarJogo(jogo);
 });

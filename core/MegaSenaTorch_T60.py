@@ -5,7 +5,7 @@ from torch import Tensor
 from torch.utils.data import TensorDataset, random_split
 
 from core.Loteria import Loteria
-from core.MegaSenaTorch_Functions import gerar_aposra
+from core.MegaSenaTorch_Functions import gerar_aposra, features_to_tensor, label_to_tensor, aposta_to_tensor
 from core.MegaSena_Updates import atualizar_base_historica
 from core.networks.LoteriaNNTotch import LoteriaNNTorch
 from repository.ApostaCandidataRepository import ApostaCandidataRepository
@@ -15,20 +15,20 @@ from repository.ResultadoRepository import MegaSenaResultadoRepository
 # todo Regulagem de parâmetros
 parameters = {
     "network": {
-        "input_size": 6,
-        "hidden_size": 20,
+        "input_size": 60,
+        "hidden_size": 1024,
         "output_size": 1,
-        "learning_rate": 0.001,
-        "weight_decay": 0.015,
-        "train_epochs": 500,
+        "learning_rate": 0.0015,
+        "weight_decay": 0.0075,
+        "train_epochs": 1000,
         "state_path": "./networks/state"
     },
-    "quantidade_jogos": 6,
-    "expurgo_apostas_recentes": 0,
+    "quantidade_jogos": 2,
+    "expurgo_apostas_recentes": 1,
     "expurgo": 5000,
     "limite_duplicados": 1,
     "ratio_minimo": 100.0,
-    "taxa_classificacao": 0.60,
+    "taxa_classificacao": 1,
     "inferir_chutes": True,
     "atualizar_base_resultados": False,
     "modo_treino": False
@@ -63,7 +63,8 @@ for row in download.__iter__():
     x_data.append(list(row[:6]))
     y_data.append(list(row[6:]))
 
-dataset = TensorDataset(Tensor(x_data), Tensor(y_data))
+dataset = TensorDataset(features_to_tensor(x_data),
+                        label_to_tensor(y_data))
 train_set, test_set = random_split(dataset, [kt, k - kt])
 
 if parameters["modo_treino"]:
@@ -77,11 +78,11 @@ if parameters["modo_treino"]:
     for i, data in enumerate(test_set, 0):
         data_test, result_test = data
         predict = network(data_test)
-        print(f"{data_test} com Previsão de {float(predict) :.4} e era {int(result_test)}")
+        print(f"Previsão de {float(predict) :.4} e era {int(result_test)}")
 else:
     network.load_state_dict(torch.load(f"{parameters['network']['state_path']}/state_network"))
 
-    expectativa = [9, 19, 22, 24, 50, 60]
+    expectativa = [6,11, 26, 32, 46, 56]
 
     while len(loteria.apostas) < parameters["quantidade_jogos"]:
         if parameters["inferir_chutes"]:
@@ -93,7 +94,9 @@ else:
         else:
             loteria.gerar_aposta()
 
-        predict = network(Tensor(loteria.aposta_candidata))
+        tensor_aposta = aposta_to_tensor(loteria.aposta_candidata)
+
+        predict = network(Tensor(tensor_aposta))
 
         if float(predict) >= parameters["taxa_classificacao"]:
             print(f"Previsão: {float(predict) :.4}")

@@ -10,7 +10,6 @@ class LoteriaNNTorch(Module):
         super(LoteriaNNTorch, self).__init__()
         self.relu = ReLU()
         self.hidden_layer = Linear(in_features=input_size, out_features=hidden_size)
-        self.hidden_layer_2 = Linear(in_features=hidden_size, out_features=hidden_size)
         self.output_layer = Linear(in_features=hidden_size, out_features=output_size)
 
     def export_network(self, oath):
@@ -18,8 +17,6 @@ class LoteriaNNTorch(Module):
 
     def forward(self, x):
         feature = self.hidden_layer(x)
-        activation = self.relu(feature)
-        feature = self.hidden_layer_2(activation)
         activation = self.relu(feature)
         output = self.output_layer(activation)
         return output
@@ -34,11 +31,11 @@ class LoteriaNNTorch(Module):
             for i, data in enumerate(loader, 0):
                 x_data, y_data = data
 
-                optimizer.zero_grad()
                 predict = self(x_data)
                 current_loss = criterion(predict, y_data)
 
                 print(f"Trenamento na fase {ix + 1} com perda de {current_loss:.3f}")
 
+                optimizer.zero_grad()
                 current_loss.backward()
                 optimizer.step()
