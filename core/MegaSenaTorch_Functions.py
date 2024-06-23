@@ -3,7 +3,7 @@ import torch
 from core.Loteria import Loteria
 
 
-def gerar_aposra(loteria: Loteria, esperados: list, expurgo: list, ratio_minimo: float, limite_duplicados: int):
+def gerar_aposta(loteria: Loteria, esperados: list, expurgo: list, ratio_minimo: float, limite_duplicados: int):
     k = len(esperados)
     ativado = 0
     continuar = True

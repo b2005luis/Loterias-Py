@@ -1,5 +1,5 @@
 import torch
-from torch.nn import Module, Linear, MSELoss, ReLU
+from torch.nn import Module, Linear, ReLU, MSELoss
 from torch.optim import Adam
 from torch.utils.data import DataLoader
 
@@ -22,8 +22,7 @@ class LoteriaNNTorch(Module):
         return output
 
     def calibrate_loss(self, data_train, ephocs: int = 1000, learnung_rate=1e-1, decay=1e-5):
-        loader = DataLoader(dataset=data_train, batch_size=50, shuffle=True)
-
+        loader = DataLoader(dataset=data_train, batch_size=500, shuffle=True)
         criterion = MSELoss()
         optimizer = Adam(self.parameters(), lr=learnung_rate, weight_decay=decay)
 
@@ -34,7 +33,7 @@ class LoteriaNNTorch(Module):
                 predict = self(x_data)
                 current_loss = criterion(predict, y_data)
 
-                print(f"Trenamento na fase {ix + 1} com perda de {current_loss:.3f}")
+                print(f"Loss: {current_loss:.3f}")
 
                 optimizer.zero_grad()
                 current_loss.backward()

@@ -18,8 +18,8 @@ def atualizar_base_historica(database: MySQLDatabase = None):
         concurso = int(item[0])
         aposta = repository.buscar_concurso(concurso)
         if aposta is None:
-            entiry = ApostaMapper().to_entity(item)
-            repository.cadastrar(entiry)
+            entity = ApostaMapper().to_entity(item)
+            repository.cadastrar(entity)
             print(item)
 
     database.connection.commit()

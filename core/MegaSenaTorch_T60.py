@@ -1,11 +1,11 @@
 from builtins import set, list
 
 import torch
-from torch import Tensor
+from torch import Tensor, FloatTensor
 from torch.utils.data import TensorDataset, random_split
 
 from core.Loteria import Loteria
-from core.MegaSenaTorch_Functions import gerar_aposra, features_to_tensor, label_to_tensor, aposta_to_tensor
+from core.MegaSenaTorch_Functions import gerar_aposta, features_to_tensor, label_to_tensor, aposta_to_tensor
 from core.MegaSena_Updates import atualizar_base_historica
 from core.networks.LoteriaNNTotch import LoteriaNNTorch
 from repository.ApostaCandidataRepository import ApostaCandidataRepository
@@ -16,22 +16,23 @@ from repository.ResultadoRepository import MegaSenaResultadoRepository
 parameters = {
     "network": {
         "input_size": 60,
-        "hidden_size": 1024,
+        "hidden_size": 240,
         "output_size": 1,
-        "learning_rate": 0.0015,
-        "weight_decay": 0.0075,
-        "train_epochs": 1000,
+        "learning_rate": 0.0002,
+        "weight_decay": 0.0009,
+        "train_epochs": 100000,
         "state_path": "./networks/state"
     },
-    "quantidade_jogos": 2,
-    "expurgo_apostas_recentes": 1,
+    "quantidade_jogos": 6,
+    "expurgo_apostas_recentes": 0,
     "expurgo": 5000,
-    "limite_duplicados": 1,
+    "limite_duplicados": 3,
     "ratio_minimo": 100.0,
     "taxa_classificacao": 1,
+    "fazer_previsao": True,
     "inferir_chutes": True,
     "atualizar_base_resultados": False,
-    "modo_treino": False
+    "modo_treino": True
 }
 
 network = LoteriaNNTorch(input_size=parameters["network"]["input_size"],
@@ -68,7 +69,8 @@ dataset = TensorDataset(features_to_tensor(x_data),
 train_set, test_set = random_split(dataset, [kt, k - kt])
 
 if parameters["modo_treino"]:
-    network.calibrate_loss(train_set, parameters["network"]["train_epochs"],
+    network.calibrate_loss(train_set,
+                           parameters["network"]["train_epochs"],
                            parameters["network"]["learning_rate"],
                            parameters["network"]["weight_decay"])
 
@@ -82,11 +84,11 @@ if parameters["modo_treino"]:
 else:
     network.load_state_dict(torch.load(f"{parameters['network']['state_path']}/state_network"))
 
-    expectativa = [6,11, 26, 32, 46, 56]
+    expectativa = [21, 27, 35, 48, 59, 60]
 
     while len(loteria.apostas) < parameters["quantidade_jogos"]:
         if parameters["inferir_chutes"]:
-            gerar_aposra(loteria=loteria,
+            gerar_aposta(loteria=loteria,
                          esperados=x_data,
                          expurgo=parameters["expurgo"],
                          ratio_minimo=parameters["ratio_minimo"],
@@ -94,12 +96,17 @@ else:
         else:
             loteria.gerar_aposta()
 
-        tensor_aposta = aposta_to_tensor(loteria.aposta_candidata)
+        if parameters["fazer_previsao"]:
+            tensor_aposta = aposta_to_tensor(loteria.aposta_candidata.copy())
+            predict: FloatTensor = network(Tensor(tensor_aposta))
+            if float(predict) >= parameters["taxa_classificacao"]:
+                print(f"Previsão: {float(predict) :.2}")
 
-        predict = network(Tensor(tensor_aposta))
+                loteria.apostas.append(loteria.aposta_candidata)
+                esperados.append(loteria.aposta_candidata)
 
-        if float(predict) >= parameters["taxa_classificacao"]:
-            print(f"Previsão: {float(predict) :.4}")
+                apostaCandidataRepository.cadastrar_aposta_candidata(loteria.aposta_candidata, f"{float(predict):.2f}")
+        else:
             loteria.apostas.append(loteria.aposta_candidata)
             esperados.append(loteria.aposta_candidata)
 
@@ -108,5 +115,7 @@ else:
         for aposta in loteria.apostas.__iter__():
             expectativa_realizada = list(set(aposta).intersection(expectativa))
             print(f"{aposta} Teria exito de: {expectativa_realizada}")
+            acuracia = (len(expectativa_realizada) / 6) * 100
+            print(f"Acurácia: {acuracia:.1f}\n")
 
     loteria.mostrar_apostas_selecionadas()
