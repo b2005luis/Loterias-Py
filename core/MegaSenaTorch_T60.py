@@ -7,7 +7,7 @@ from torch.utils.data import TensorDataset, random_split
 from core.Loteria import Loteria
 from core.MegaSenaTorch_Functions import gerar_aposta, features_to_tensor, label_to_tensor, aposta_to_tensor
 from core.MegaSena_Updates import atualizar_base_historica
-from core.networks.LoteriaNNTotch import LoteriaNNTorch
+from core.networks.LoteriaNNTorch import LoteriaNNTorch
 from repository.ApostaCandidataRepository import ApostaCandidataRepository
 from repository.MySQLDatabase import MySQLDatabase
 from repository.ResultadoRepository import MegaSenaResultadoRepository
@@ -16,28 +16,30 @@ from repository.ResultadoRepository import MegaSenaResultadoRepository
 parameters = {
     "network": {
         "input_size": 60,
-        "hidden_size": 240,
+        "hidden_size": 256,
         "output_size": 1,
-        "learning_rate": 0.0002,
+        "layers": 8,
+        "learning_rate": 0.01,
         "weight_decay": 0.0009,
-        "train_epochs": 100000,
+        "train_epochs": 500,
         "state_path": "./networks/state"
     },
-    "quantidade_jogos": 6,
+    "quantidade_jogos": 4,
     "expurgo_apostas_recentes": 0,
     "expurgo": 5000,
-    "limite_duplicados": 3,
+    "limite_duplicados": 1,
     "ratio_minimo": 100.0,
-    "taxa_classificacao": 1,
+    "taxa_classificacao": 0.60,
     "fazer_previsao": True,
     "inferir_chutes": True,
     "atualizar_base_resultados": False,
-    "modo_treino": True
+    "modo_treino": False
 }
 
 network = LoteriaNNTorch(input_size=parameters["network"]["input_size"],
                          hidden_size=parameters["network"]["hidden_size"],
-                         output_size=parameters["network"]["output_size"])
+                         output_size=parameters["network"]["output_size"],
+                         layers=parameters["network"]["layers"])
 
 database = MySQLDatabase()
 database.open_connection()
@@ -57,7 +59,7 @@ if parameters["atualizar_base_resultados"]:
 download = resultadoRepository.listar_resultados("Coluna1, Coluna2, Coluna3, Coluna4, Coluna5, Coluna6, Ganhadores")
 
 k = len(download)
-kt = k - 10
+kt = k - 50
 x_data = list()
 y_data = list()
 for row in download.__iter__():
@@ -84,7 +86,7 @@ if parameters["modo_treino"]:
 else:
     network.load_state_dict(torch.load(f"{parameters['network']['state_path']}/state_network"))
 
-    expectativa = [21, 27, 35, 48, 59, 60]
+    expectativa = [10, 16, 35, 46, 49, 60]
 
     while len(loteria.apostas) < parameters["quantidade_jogos"]:
         if parameters["inferir_chutes"]:

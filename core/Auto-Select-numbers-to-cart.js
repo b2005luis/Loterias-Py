@@ -1,23 +1,19 @@
-
 let jogos = [
-   [3, 11, 13, 18, 32, 36],
-   [1, 3, 8, 16, 42, 48],
-   [1, 10, 18, 39, 45, 46],
-   [4, 13, 17, 37, 46, 53],
-   [2, 5, 14, 18, 21, 55],
-   [13, 36, 41, 43, 48, 57]
+    [3, 6, 7, 9, 20, 56],
+    [4, 10, 16, 33, 41, 46],
+    [7, 13, 17, 21, 27, 39],
+    [17, 28, 33, 49, 58, 59]
 ];
 
-async function marcarJogo(jogo) {
-    setTimeout(() => {
-        jogo.map(function (n) {
-            n = (n < 10) ? ("#n0" + n) : ("#n" + n);
-            document.querySelector(n).click();
-        });
-        document.querySelector("#colocarnocarrinho").click();
-    }, 5000);
+function marcarJogo(jogo) {
+    jogo.map(function (n) {
+        n = (n < 10) ? ("#n0" + n) : ("#n" + n);
+        document.querySelector(n).click();
+    });
 }
 
-jogos.map(function (jogo) {
-    return marcarJogo(jogo);
+jogos.forEach(function (jogo) {
+    marcarJogo(jogo);
+    document.querySelector("#colocarnocarrinho").click();
+    window.location.href = "https://www.loteriasonline.caixa.gov.br/silce-web/#/mega-sena";
 });
