@@ -1,4 +1,5 @@
 from builtins import set, list
+from math import floor
 
 import torch
 from torch import Tensor, FloatTensor
@@ -16,20 +17,19 @@ from repository.ResultadoRepository import MegaSenaResultadoRepository
 parameters = {
     "network": {
         "input_size": 60,
-        "hidden_size": 256,
+        "hidden_size": 360,
         "output_size": 1,
-        "layers": 8,
-        "learning_rate": 0.01,
-        "weight_decay": 0.0009,
-        "train_epochs": 500,
+        "learning_rate": 0.0015,
+        "weight_decay": 0.0085,
+        "train_epochs": 1000,
         "state_path": "./networks/state"
     },
-    "quantidade_jogos": 4,
+    "quantidade_jogos": 10,
     "expurgo_apostas_recentes": 0,
-    "expurgo": 5000,
+    "expurgo": 3000,
     "limite_duplicados": 1,
     "ratio_minimo": 100.0,
-    "taxa_classificacao": 0.60,
+    "taxa_classificacao": 1,
     "fazer_previsao": True,
     "inferir_chutes": True,
     "atualizar_base_resultados": False,
@@ -38,8 +38,7 @@ parameters = {
 
 network = LoteriaNNTorch(input_size=parameters["network"]["input_size"],
                          hidden_size=parameters["network"]["hidden_size"],
-                         output_size=parameters["network"]["output_size"],
-                         layers=parameters["network"]["layers"])
+                         output_size=parameters["network"]["output_size"])
 
 database = MySQLDatabase()
 database.open_connection()
@@ -86,7 +85,7 @@ if parameters["modo_treino"]:
 else:
     network.load_state_dict(torch.load(f"{parameters['network']['state_path']}/state_network"))
 
-    expectativa = [10, 16, 35, 46, 49, 60]
+    expectativa = [10, 24, 33, 35, 41, 46]
 
     while len(loteria.apostas) < parameters["quantidade_jogos"]:
         if parameters["inferir_chutes"]:
@@ -101,7 +100,8 @@ else:
         if parameters["fazer_previsao"]:
             tensor_aposta = aposta_to_tensor(loteria.aposta_candidata.copy())
             predict: FloatTensor = network(Tensor(tensor_aposta))
-            if float(predict) >= parameters["taxa_classificacao"]:
+            predict = floor(predict)
+            if predict >= parameters["taxa_classificacao"]:
                 print(f"Previsão: {float(predict) :.2}")
 
                 loteria.apostas.append(loteria.aposta_candidata)

@@ -1,3 +1,5 @@
+from time import sleep
+
 import torch
 
 from core.Loteria import Loteria
@@ -8,6 +10,7 @@ def gerar_aposta(loteria: Loteria, esperados: list, expurgo: list, ratio_minimo:
     ativado = 0
     continuar = True
     while continuar:
+        sleep(0.25)
         loteria.gerar_aposta()
         for row in esperados[k - expurgo:].__iter__():
             acertos = list(set(row).intersection(loteria.aposta_candidata))

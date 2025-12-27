@@ -45,7 +45,7 @@ class MegaSenaResultadoRepository:
             try:
                 cursor = self.database.connection.cursor()
                 cursor.execute(
-                    operation=f"SELECT TOP 1 {colunas} FROM Resultados ORDER BY Concurso DESC"
+                    operation=f"SELECT TOP 1 Concurso, {colunas} FROM Resultados ORDER BY Concurso DESC"
                 )
                 result_set = cursor.fetchone()
                 return result_set
