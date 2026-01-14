@@ -6,19 +6,19 @@ class ApostaCandidataRepository():
     def __init__(self, database: MySQLDatabase = None):
         self.database: MySQLDatabase = database
 
-    def cadastrar_aposta_candidata(self, parametros: list, previsao: any):
+    def cadastrar_aposta_candidata(self, aposta_candidata: list, previsao: any):
         if self.database.is_connected():
+            cursor = self.database.connection.cursor()
             try:
-                parametros_list: list = list()
-                parametros_list.append(None)
-                parametros_list.extend(parametros)
-                parametros_list.append(previsao)
+                parametros: list = list()
+                parametros.extend(aposta_candidata)
+                parametros.append(previsao)
 
-                cursor = self.database.connection.cursor()
                 cursor.execute(
                     operation="INSERT INTO Apostas_Candidatas "
-                              "VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
-                    params=tuple(parametros_list)
+                              "(Coluna1, Coluna2, Coluna3, Coluna4, Coluna5, Coluna6, Previsao) "
+                              "VALUES (%s, %s, %s, %s, %s, %s, %s)",
+                    params=tuple(parametros)
                 )
             except Exception as erro:
                 print(erro.__str__())
