@@ -14,35 +14,32 @@ from repository.ApostaCandidataRepository import ApostaCandidataRepository
 from repository.MySQLDatabase import MySQLDatabase
 from repository.ResultadoRepository import MegaSenaResultadoRepository
 
+# todo Regulagem de parâmetros
+parameters = {
+    "network": {
+        "input_size": 60,
+        "hidden_size": 60,
+        "output_size": 1,
+        "learning_rate": 0.01,
+        "weight_decay": 0.01,
+        "train_epochs": 100,
+        "state_path": "./networks/state"
+    },
+    "quantidade_numeros": 6,
+    "quantidade_jogos": 10,
+    "expurgo_apostas_recentes": 0,
+    "expurgo": 5000,
+    "limite_duplicados": 0,
+    "ratio_minimo": 100,
+    "taxa_classificacao": 10,
+    "fazer_previsao": True,
+    "inferir_chutes": False,
+    "atualizar_base_resultados": False,
+    "modo_treino": False
+}
+
 
 def mega_sena():
-    # todo Regulagem de parâmetros
-    parameters = {
-        "network": {
-            "input_size": 60,
-            "hidden_size": 120,
-            "output_size": 1,
-            "learning_rate": 0.005,
-            "weight_decay": 0.005,
-            "train_epochs": 500,
-            "state_path": "./networks/state"
-        },
-        "quantidade_numeros": 6,
-        "quantidade_jogos": 10,
-        "expurgo_apostas_recentes": 1,
-        "expurgo": 5000,
-        "limite_duplicados": 1,
-        "ratio_minimo": 100,
-        "taxa_classificacao": 1,
-        "fazer_previsao": True,
-        "inferir_chutes": True,
-        "atualizar_base_resultados": False,
-        "modo_treino": False
-    }
-
-    # device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
-    device = torch.device("cpu")
-
     network = LoteriaNNTorch(input_size=parameters["network"]["input_size"],
                              hidden_size=parameters["network"]["hidden_size"],
                              output_size=parameters["network"]["output_size"])
@@ -78,8 +75,7 @@ def mega_sena():
                             label_to_tensor(y_data))
     train_set, test_set = random_split(dataset, [kt, k - kt])
 
-    # ultimo item do dataset
-    expectativa = download[k:]
+    expectativa = [9, 13, 21, 32, 33, 59]# ultimo item do dataset
 
     if parameters["modo_treino"]:
         network.calibrate_loss(train_set,
@@ -88,7 +84,6 @@ def mega_sena():
                                parameters["network"]["weight_decay"])
 
         network.export_network(parameters["network"]["state_path"])
-        network.to(device)
 
         print("\n")
         for i, data in enumerate(test_set, 0):
@@ -97,7 +92,6 @@ def mega_sena():
             print(f"Previsão de {float(predict) :.4} e era {int(result_test)}")
     else:
         network.load_state_dict(torch.load(f"{parameters['network']['state_path']}/state_network"))
-        network.to(device)
 
         while len(loteria.apostas) < parameters["quantidade_jogos"]:
             if parameters["inferir_chutes"]:
@@ -134,8 +128,8 @@ def mega_sena():
                 print(f"Acurácia: {acuracia:.1f}\n")
 
         loteria.mostrar_apostas_selecionadas()
-        exit()
+        exit(0)
 
 
-concorrent = Thread(target=mega_sena)
-concorrent.start()
+parallel = Thread(target=mega_sena)
+parallel.start()

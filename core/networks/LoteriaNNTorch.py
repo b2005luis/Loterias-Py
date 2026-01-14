@@ -1,3 +1,5 @@
+from asyncio import sleep
+
 import torch
 from torch import Tensor
 from torch.nn import Module, Linear, ReLU, MSELoss
@@ -28,7 +30,6 @@ class LoteriaNNTorch(Module):
         optimizer = Adam(self.parameters(), lr=learnung_rate, weight_decay=decay)
 
         for ix in range(ephocs):
-            optimizer.zero_grad()
             for i, data in enumerate(loader, 0):
                 x_data, y_data = data
 
@@ -37,5 +38,7 @@ class LoteriaNNTorch(Module):
 
                 print(f"Época: {ix} -- Loss: {current_loss}")
 
+                optimizer.zero_grad()
                 current_loss.backward()
                 optimizer.step()
+                sleep(0.05)
